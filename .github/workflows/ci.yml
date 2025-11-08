@@ -1,0 +1,44 @@
+name: ULMD CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Security Scan
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck clang-tidy
+        cppcheck --enable=all --error-exitcode=1 --suppress=missingIncludeSystem src/ apps/
+
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Project
+      run: |
+        chmod +x build.sh
+        ./build.sh
+    - name: Run Tests
+      run: |
+        chmod +x run_tests.sh
+        ./run_tests.sh
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [security-scan, build-and-test]
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy
+      run: echo "Ready for production deployment"
