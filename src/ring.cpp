@@ -1,5 +1,6 @@
 #include <ulmd/ring.hpp>
 #include <atomic>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
@@ -141,25 +142,27 @@ namespace ulmd {
 
     Spsc* spsc_create_shared(const char* name, uint32_t slots, uint32_t elem_size) {
         if (!is_safe_shm_name(name) || (slots & (slots - 1)) != 0 || slots == 0 || elem_size == 0) return nullptr;
-        
+
         size_t size = sizeof(Spsc) + slots * elem_size;
-        
-        int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0666);
+
+        char shm_name[67]; // '/' + up to 64 chars + '\0'
+        snprintf(shm_name, sizeof(shm_name), "/%s", name);
+        int fd = shm_open(shm_name, O_CREAT | O_EXCL | O_RDWR, 0666);
         if (fd < 0) return nullptr;
         
         if (ftruncate(fd, size) < 0) {
             int saved_errno = errno;
             close(fd);
-            shm_unlink(name);
+            shm_unlink(shm_name);
             errno = saved_errno;
             return nullptr;
         }
-        
+
         Spsc* ring = (Spsc*)mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         close(fd);
-        
+
         if (ring == MAP_FAILED) {
-            shm_unlink(name);
+            shm_unlink(shm_name);
             return nullptr;
         }
         
@@ -173,8 +176,10 @@ namespace ulmd {
     
     Spsc* spsc_attach_shared(const char* name) {
         if (!is_safe_shm_name(name)) return nullptr;
-        
-        int fd = shm_open(name, O_RDWR, 0);
+
+        char shm_name[67];
+        snprintf(shm_name, sizeof(shm_name), "/%s", name);
+        int fd = shm_open(shm_name, O_RDWR, 0);
         if (fd < 0) return nullptr;
         
         struct stat st;
@@ -193,6 +198,9 @@ namespace ulmd {
     }
     
     int spsc_destroy_shared(const char* name) {
-        return shm_unlink(name);
+        if (!is_safe_shm_name(name)) return -1;
+        char shm_name[67];
+        snprintf(shm_name, sizeof(shm_name), "/%s", name);
+        return shm_unlink(shm_name);
     }
 }

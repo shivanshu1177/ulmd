@@ -42,17 +42,10 @@ endif()
 
 set(ULMD_APPS ingress parser worker_risk ringctl ulmdsim tsc_cal)
 
-foreach(app ${ULMD_APPS})
-    add_executable(${app} apps/${app}.cpp)
-    target_link_libraries(${app} PRIVATE ulmd_interfaces)
-endforeach()
-
-# Add after ulmd_interfaces definition
 file(GLOB ULMD_SOURCES src/*.cpp)
 add_library(ulmd_lib STATIC ${ULMD_SOURCES})
 target_link_libraries(ulmd_lib PUBLIC ulmd_interfaces)
 
-# Update app linking
 foreach(app ${ULMD_APPS})
     add_executable(${app} apps/${app}.cpp)
     target_link_libraries(${app} PRIVATE ulmd_lib)
