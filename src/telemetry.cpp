@@ -1,5 +1,6 @@
 #include <ulmd/telemetry.hpp>
 #include <cstdio>
+#include <cstring>
 #include <cinttypes>
 #include <chrono>
 

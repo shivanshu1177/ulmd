@@ -1,5 +1,6 @@
 #include <ulmd/health.hpp>
 #include <cstdio>
+#include <cstring>
 #include <chrono>
 #include <cinttypes>
 
