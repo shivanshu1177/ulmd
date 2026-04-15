@@ -79,20 +79,21 @@ void* pool_acquire(MessagePool* pool) {
 
 void pool_release(MessagePool* pool, void* msg) {
     if (!pool || !msg || !pool->data || !pool->free_list) return;
-    
+    if (pool->msg_size == 0) return;
+
     // Validate that msg belongs to this pool's memory range
-    char* msg_ptr = static_cast<char*>(msg);
-    char* pool_start = pool->data;
-    
+    const char* msg_ptr = static_cast<const char*>(msg);
+    const char* pool_start = pool->data;
+
     // Check for integer overflow in size calculation
     if (pool->capacity > UINT32_MAX / pool->msg_size) return;
-    
-    char* pool_end = pool->data + static_cast<size_t>(pool->capacity) * pool->msg_size;
+
+    const char* pool_end = pool->data + static_cast<size_t>(pool->capacity) * pool->msg_size;
     if (msg_ptr < pool_start || msg_ptr >= pool_end) return;
-    
+
     // Validate message alignment
     size_t offset = static_cast<size_t>(msg_ptr - pool_start);
-    if (pool->msg_size == 0 || offset % pool->msg_size != 0) return;
+    if (offset % pool->msg_size != 0) return;
     
     uint32_t head = pool->head.load(std::memory_order_relaxed);
     while (head < pool->capacity) {

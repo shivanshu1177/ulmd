@@ -216,8 +216,6 @@ int main(int argc, char* argv[]) {
     uint64_t recv_tsc;
     auto last_health_check = std::chrono::steady_clock::now();
     while (running.load(std::memory_order_relaxed) && !ulmd::shutdown_requested()) {
-        uint64_t start_tsc = get_timestamp();
-        
         // Read recv_tsc (8 bytes) then message (64 bytes)
         ssize_t tsc_bytes = read(STDIN_FILENO, &recv_tsc, sizeof(recv_tsc));
         if (tsc_bytes == 0) break; // EOF

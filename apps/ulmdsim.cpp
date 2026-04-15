@@ -125,6 +125,8 @@ static uint64_t get_timestamp_ns() {
         return (mach_time / timebase.denom) * timebase.numer;
     }
     return mach_time * timebase.numer / timebase.denom;
+#else
+    return 0;
 #endif
 }
 

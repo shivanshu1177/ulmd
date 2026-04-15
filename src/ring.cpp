@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
+#include <new>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -32,17 +33,11 @@ namespace ulmd {
             return nullptr;
         }
         
-        Spsc* ring = static_cast<Spsc*>(ptr);
-        if (!ring) return nullptr;
-        
-        // Initialize memory to prevent undefined behavior
-        memset(ring, 0, size);
-        
-        ring->head.store(0);
-        ring->tail.store(0);
+        Spsc* ring = new (ptr) Spsc();  // properly constructs atomics via their constructors
         ring->mask = slots - 1;
         ring->elem_size = elem_size;
         ring->is_shared = false;
+        memset(ring->data, 0, static_cast<size_t>(slots) * elem_size);
         return ring;
     }
     
