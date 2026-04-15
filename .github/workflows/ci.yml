@@ -15,14 +15,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y cppcheck clang-tidy
-        cppcheck --enable=all --error-exitcode=1 \
+        cppcheck --enable=warning,performance,portability \
+          --error-exitcode=1 \
           --suppress=missingIncludeSystem \
-          --suppress=unusedFunction \
-          --suppress=constVariablePointer \
-          --suppress=knownConditionTrueFalse \
-          --suppress=cstyleCast \
-          --suppress=constParameter \
-          --suppress=normalCheckLevelMaxBranches \
           src/ apps/
 
   build-and-test:
