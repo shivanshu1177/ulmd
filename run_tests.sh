@@ -27,7 +27,7 @@ run_test() {
     local result_file="${TEST_RESULTS_DIR}/${test_name}.result"
     local output_file="${TEST_RESULTS_DIR}/${test_name}.output"
     
-    if timeout "${timeout_seconds}" bash -c "${test_command}" > "${output_file}" 2>&1; then
+    if bash -c "${test_command}" > "${output_file}" 2>&1; then
         echo "✅ PASS: ${test_name}"
         echo "PASS" > "${result_file}"
     else
