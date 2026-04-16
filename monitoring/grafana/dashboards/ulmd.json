@@ -1,0 +1,382 @@
+{
+  "title": "ULMD Market Data Pipeline",
+  "uid": "ulmd-pipeline",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "tags": ["ulmd", "hft", "latency"],
+  "panels": [
+
+    {
+      "id": 1,
+      "title": "System Health",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "HEALTHY",   "color": "green"  } } },
+            { "type": "value", "options": { "1": { "text": "DEGRADED",  "color": "orange" } } },
+            { "type": "value", "options": { "2": { "text": "UNHEALTHY", "color": "red"    } } },
+            { "type": "value", "options": { "3": { "text": "UNKNOWN",   "color": "grey"   } } }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red",    "value": 2 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_health_status",
+          "legendFormat": "Health",
+          "datasource": "Prometheus"
+        }
+      ]
+    },
+
+    {
+      "id": 2,
+      "title": "Messages Processed",
+      "type": "stat",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "blue", "value": null }]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_worker_total_messages",
+          "legendFormat": "Total",
+          "datasource": "Prometheus"
+        }
+      ]
+    },
+
+    {
+      "id": 3,
+      "title": "Throughput (msg/s)",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 500000 },
+              { "color": "red",    "value": 900000 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_worker_messages_per_second",
+          "legendFormat": "msg/s",
+          "datasource": "Prometheus"
+        }
+      ]
+    },
+
+    {
+      "id": 4,
+      "title": "Error Rate",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "minVizWidth": 75,
+        "minVizHeight": 75
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red",    "value": 10 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_error_rate_percent",
+          "legendFormat": "Error %",
+          "datasource": "Prometheus"
+        }
+      ]
+    },
+
+    {
+      "id": 5,
+      "title": "Dropped Messages",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red",   "value": 1 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_dropped_messages_total",
+          "legendFormat": "Dropped",
+          "datasource": "Prometheus"
+        }
+      ]
+    },
+
+    {
+      "id": 6,
+      "title": "CSV Rows Sampled",
+      "type": "stat",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "grey", "value": null }]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_csv_rows_sampled",
+          "legendFormat": "Rows",
+          "datasource": "Prometheus"
+        }
+      ]
+    },
+
+    {
+      "id": 10,
+      "title": "E2E Latency Percentiles",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ns",
+          "custom": { "lineWidth": 2, "fillOpacity": 5 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p50"  }, "properties": [{ "id": "color", "value": { "fixedColor": "green",  "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95"  }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p99"  }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p99.9"}, "properties": [{ "id": "color", "value": { "fixedColor": "red",    "mode": "fixed" } }] }
+        ]
+      },
+      "targets": [
+        { "expr": "ulmd_e2e_latency_p50_nanoseconds",  "legendFormat": "p50",   "datasource": "Prometheus" },
+        { "expr": "ulmd_e2e_latency_p95_nanoseconds",  "legendFormat": "p95",   "datasource": "Prometheus" },
+        { "expr": "ulmd_e2e_latency_p99_nanoseconds",  "legendFormat": "p99",   "datasource": "Prometheus" },
+        { "expr": "ulmd_e2e_latency_p999_nanoseconds", "legendFormat": "p99.9", "datasource": "Prometheus" },
+        { "expr": "ulmd_e2e_latency_mean_nanoseconds", "legendFormat": "mean",  "datasource": "Prometheus" }
+      ]
+    },
+
+    {
+      "id": 11,
+      "title": "Per-Component p95 Latency",
+      "type": "bargauge",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ns",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 1000 },
+              { "color": "orange", "value": 10000 },
+              { "color": "red",    "value": 100000 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_component_latency_p95_nanoseconds",
+          "legendFormat": "{{component}}",
+          "datasource": "Prometheus"
+        }
+      ]
+    },
+
+    {
+      "id": 20,
+      "title": "Throughput — Messages / sec",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 7 },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      },
+      "targets": [
+        { "expr": "ulmd_worker_messages_per_second", "legendFormat": "worker msg/s",  "datasource": "Prometheus" },
+        { "expr": "ulmd_parser_messages_per_second", "legendFormat": "parser msg/s",  "datasource": "Prometheus" }
+      ]
+    },
+
+    {
+      "id": 21,
+      "title": "Throughput — Bytes / sec",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 7 },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      },
+      "targets": [
+        { "expr": "ulmd_worker_bytes_per_second", "legendFormat": "worker bytes/s", "datasource": "Prometheus" },
+        { "expr": "ulmd_parser_bytes_per_second", "legendFormat": "parser bytes/s", "datasource": "Prometheus" }
+      ]
+    },
+
+    {
+      "id": 30,
+      "title": "Ring Buffer Occupancy (max slots seen)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 19, "w": 12, "h": 7 },
+      "options": {
+        "tooltip": { "mode": "single" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 15 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 2048 },
+              { "color": "red",    "value": 3584 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_ring_occupancy_max_slots",
+          "legendFormat": "max occupancy",
+          "datasource": "Prometheus"
+        }
+      ]
+    },
+
+    {
+      "id": 31,
+      "title": "Per-Symbol p95 Latency",
+      "type": "table",
+      "gridPos": { "x": 12, "y": 19, "w": 12, "h": 7 },
+      "options": {
+        "sortBy": [{ "displayName": "Value", "desc": true }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ns",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 1000 },
+              { "color": "orange", "value": 10000 },
+              { "color": "red",    "value": 100000 }
+            ]
+          },
+          "custom": { "displayMode": "color-background" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "ulmd_symbol_latency_p95_nanoseconds",
+          "legendFormat": "{{symbol}}",
+          "instant": true,
+          "datasource": "Prometheus"
+        }
+      ],
+      "transformations": [
+        { "id": "labelsToFields", "options": { "mode": "columns" } },
+        { "id": "organize", "options": { "renameByName": { "Value": "p95 latency (ns)" } } }
+      ]
+    }
+
+  ]
+}

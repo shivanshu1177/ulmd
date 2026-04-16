@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+
+  exporter:
+    build: ./exporter
+    container_name: ulmd_exporter
+    restart: unless-stopped
+    ports:
+      - "9101:9101"
+    volumes:
+      - /tmp:/tmp:ro          # read ULMD output files from the host
+    environment:
+      - ULMD_CSV_PATH=/tmp/ulmd_latency.csv
+      - ULMD_WORKER_METRICS_PATH=/tmp/worker_risk_metrics.txt
+      - ULMD_PARSER_METRICS_PATH=/tmp/parser_metrics.txt
+      - ULMD_HEALTH_PATH=/tmp/parser_health.status
+      - ULMD_EXPORTER_PORT=9101
+      - ULMD_CSV_TAIL_ROWS=10000
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: ulmd_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - exporter
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: ulmd_grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ulmd.json
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus_data:
+  grafana_data:
